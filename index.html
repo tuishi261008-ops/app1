@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#202126"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>保護者による使用制限</title>
+<style>
+:root{--bg:#1a1a24;--bar:#3d3f4b;--card:#272833;--fg:#e6e6ee;--sub:#a9abb8;--acc:#b8c4ff;--blue:#0b3fc4;--line:#4a4c5a;box-sizing:border-box}
+:root[data-theme="light"]{--bg:#fbfbff;--bar:#e3e4f0;--card:#eceef8;--fg:#1b1b24;--sub:#5a5c6a;--acc:#3b4fb8;--blue:#3b5bdb;--line:#b8bac8}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#fbfbff;--bar:#e3e4f0;--card:#eceef8;--fg:#1b1b24;--sub:#5a5c6a;--acc:#3b4fb8;--blue:#3b5bdb;--line:#b8bac8}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Google Sans","Noto Sans JP",system-ui,sans-serif;overflow:hidden}
+#app{position:fixed;inset:0}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);transition:transform .3s cubic-bezier(.2,0,0,1),opacity .3s}
+.screen.off{transform:translateX(100%)}
+.screen.under{transform:translateX(-18%);opacity:.4}
+.bar{display:flex;align-items:center;gap:8px;min-height:56px;padding:env(safe-area-inset-top,0px) 8px 0 16px;transition:background .2s;flex:none}
+.bar.on{background:var(--bar)}
+.bar .t{flex:1;font-size:18px;opacity:0;transition:opacity .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar.on .t{opacity:1}
+.ib{width:40px;height:40px;border:0;background:none;color:var(--fg);border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.ib:active{background:#ffffff22}
+.ib svg{width:22px;height:22px;fill:currentColor}
+.sp{flex:1}
+.body{flex:1;overflow-y:auto;padding:0 0 calc(40px + env(safe-area-inset-bottom,0px));scroll-behavior:smooth}
+.in{max-width:720px;margin:0 auto}
+h1{font-size:34px;font-weight:400;margin:24px 20px 16px;line-height:1.25}
+p.d{margin:0 20px 16px;color:var(--fg);font-size:14px;line-height:1.5}
+.sec{color:var(--acc);font-size:12px;font-weight:600;margin:22px 20px 6px}
+.chip{display:inline-flex;gap:6px;align-items:center;background:#c7d0ff;color:#1a2570;border-radius:10px;padding:7px 12px;font-size:13px;margin:0 20px;cursor:pointer}
+.chip svg{width:16px;height:16px;fill:currentColor}
+.big{font-size:44px;margin:6px 20px 0;display:flex;justify-content:space-between;align-items:baseline}
+.big small{font-size:12px;color:var(--sub)}
+.prog{height:8px;border-radius:4px;background:var(--line);margin:4px 20px 12px;position:relative}
+.prog i{position:absolute;left:0;top:0;height:100%;width:2.5%;min-width:8px;background:var(--fg);border-radius:4px}
+.row{display:flex;align-items:center;gap:20px;padding:12px 20px;cursor:pointer;min-height:56px;position:relative}
+.row:active{background:#ffffff14}
+.row.pill{background:var(--card);border-radius:16px;margin:4px 12px}
+.row .ic{width:24px;height:24px;fill:var(--fg);flex:none}
+.row .tx{flex:1;min-width:0}
+.row .a{font-size:16px}
+.row .b{font-size:12px;color:var(--sub);margin-top:2px;line-height:1.4}
+.row .end{color:var(--sub);font-size:12px}
+.ap{width:28px;height:28px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:13px;font-weight:700;color:#fff}
+.info{display:flex;gap:16px;margin:14px 20px;color:var(--sub);font-size:12px;line-height:1.55}
+.info svg{width:18px;height:18px;fill:currentColor;flex:none}
+.map{margin:6px 0;height:130px;background:#2a2d33;position:relative;overflow:hidden}
+.map svg{width:100%;height:100%;display:block}
+.sw{margin:10px 16px;background:var(--blue);color:#fff;border-radius:16px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.tg{width:48px;height:28px;border-radius:14px;background:#fff;position:relative;transition:.2s;flex:none}
+.tg i{position:absolute;top:4px;left:24px;width:20px;height:20px;border-radius:50%;background:var(--blue);transition:.2s}
+.tg.off{background:#ffffff33}.tg.off i{left:4px;background:#fff}
+.cb{width:18px;height:18px;border-radius:3px;background:#a8b4ff;display:grid;place-items:center;color:#0a1450;font-size:14px;font-weight:700;cursor:pointer;flex:none}
+.cb.off{background:none;border:2px solid var(--sub)}
+.cb.off::after{content:""}
+.div{width:1px;height:28px;background:var(--line);margin-left:auto;margin-right:-8px}
+.load{flex:1;display:grid;place-items:center}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid #ffffff22;border-top-color:#fff;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+.banner{display:flex;gap:14px;margin:8px 16px;background:var(--card);border-radius:12px;padding:14px;font-size:13px;line-height:1.5}
+.banner svg{width:22px;height:22px;fill:var(--sub);flex:none}
+.card{background:var(--card);border-radius:20px;margin:10px 16px;overflow:hidden}
+.av{width:84px;height:84px;margin:24px auto 8px;border-radius:50%;background:#2fa84f;display:grid;place-items:center;font-size:42px;box-shadow:0 0 0 6px #2fa84f55}
+.mail{text-align:center;font-size:13px;color:var(--sub)}
+.btn{display:flex;gap:8px;align-items:center;justify-content:center;margin:14px auto 20px;width:max-content;padding:10px 26px;border:1px solid var(--line);border-radius:22px;background:#ffffff0d;color:var(--fg);font-size:14px;cursor:pointer}
+.g{font-weight:700;color:#8ab4f8}
+.ap{width:36px;height:36px;display:grid;place-items:center;overflow:hidden;font-size:11px;font-weight:700;color:#fff}
+.cb.off{color:transparent}
+.lk{position:absolute;inset:0;background:#202126;color:#e6e6ee;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.lkm{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px 8vh}
+.lkm h2{font-size:34px;font-weight:500;margin:28px 0 14px}
+.lkm p{margin:0;font-size:16px;line-height:1.6;max-width:420px}
+.lkb{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 20px calc(28px + env(safe-area-inset-bottom,0px));max-width:560px;width:100%;margin:0 auto}
+.rb,.pl{background:#3a3d45;color:#8ab4f8;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.rb:active,.pl:active{filter:brightness(1.3)}
+.rb{width:62px;height:62px;border-radius:50%;flex:none}
+.pl{flex:1;max-width:240px;height:62px;border-radius:31px;gap:10px;font-size:15px}
+.rb svg,.pl svg{width:26px;height:26px;fill:currentColor}
+.sheet{position:absolute;inset:0;pointer-events:none}
+.sheet.open{pointer-events:auto}
+#scrim{position:absolute;inset:0;background:#000a;opacity:0;transition:.3s}
+.sheet.open #scrim{opacity:1}
+.sh{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;background:#2b2d33;color:#e6e6ee;border-radius:28px 28px 0 0;padding:26px 24px calc(24px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .35s cubic-bezier(.2,0,0,1)}
+.sheet.open .sh{transform:none}
+.gl{font-size:26px;font-weight:600;letter-spacing:-1px}
+.sh h3{font-size:24px;font-weight:400;margin:14px 0 6px}
+.mc{display:inline-flex;align-items:center;gap:8px;border:1px solid #5a5d6a;border-radius:20px;padding:4px 14px 4px 4px;font-size:14px;margin:6px 0 18px}
+.mc i{width:24px;height:24px;border-radius:50%;background:#7e57c2;display:grid;place-items:center;font-style:normal;font-size:13px}
+.fld{border:1px solid #8e91a0;border-radius:6px;padding:0 14px;height:56px;display:flex;align-items:center}
+.fld:focus-within{border:2px solid #8ab4f8}
+.fld.bad{border:2px solid #f28b82}
+.fld input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:17px;min-width:0}
+.shake{animation:sk .35s}
+@keyframes sk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.er{color:#f28b82;font-size:13px;margin:8px 4px 0;display:none}
+.r2{display:flex;align-items:center;gap:12px;margin:16px 2px;font-size:14px;cursor:pointer}
+.bt{display:flex;align-items:center;justify-content:space-between;margin-top:20px}
+.bt span{color:#8ab4f8;font-size:14px;font-weight:500;cursor:pointer}
+.bt button{background:#8ab4f8;color:#062e6f;border:0;border-radius:20px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer}
+.dial{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:340px;width:100%;margin:0 auto;padding:0 16px 24px}
+.dsp{height:64px;font-size:34px;text-align:center;overflow:hidden}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.key{height:68px;border-radius:34px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:28px;cursor:pointer;line-height:1}
+.key:active{filter:brightness(1.4)}
+.key small{font-size:9px;letter-spacing:2px;color:var(--sub);height:10px;margin-top:2px}
+.cr{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:18px}
+.call{width:72px;height:72px;border-radius:50%;background:#34a853;display:grid;place-items:center;cursor:pointer}
+.call svg{width:30px;height:30px;fill:#fff}
+.toast{position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:#e6e6ee;color:#1a1a24;padding:10px 18px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+.toast.s{opacity:1;transform:translate(-50%,0)}
+.menu{position:fixed;right:8px;top:calc(env(safe-area-inset-top,0px) + 52px);background:var(--card);border-radius:12px;padding:6px 0;box-shadow:0 6px 24px #0008;z-index:9;display:none;min-width:200px}
+.menu div{padding:12px 18px;cursor:pointer;font-size:15px}
+.menu div:active{background:#ffffff14}
+.lk{background:#202125}
+.lkm{justify-content:flex-start;padding:22vh 24px 0}
+.lkm h2{font-size:30px;font-weight:400;color:#e3e3e3;margin:26px 0 14px;letter-spacing:.5px}
+.lkm p{font-size:15px;line-height:1.35;color:#c4c7c5;max-width:330px}
+.lkm p b{font-weight:600;color:#e3e3e3}
+.lkb{max-width:520px;padding:0 22px calc(28px + env(safe-area-inset-bottom,0px))}
+.rb{width:44px;height:44px;background:#34363b}
+.pl{flex:none;width:162px;height:44px;border-radius:22px;background:#34363b;gap:8px;font-size:14px;font-weight:500}
+.rb svg,.pl svg{width:22px;height:22px}
+.mc{margin:14px 0 18px}
+.screen.offL{transform:translateX(-100%)}
+.screen.underR{transform:translateX(100%)}
+.ph{position:absolute;inset:0;background:#1c1d21;color:#e3e3e3;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);font-size:14px}
+.pwrap{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.psb{flex:none;margin:8px 10px;height:52px;border-radius:26px;background:#2b2c31;display:flex;align-items:center;padding:0 16px;gap:14px;color:#c4c7c5}
+.psb svg{width:24px;height:24px;fill:currentColor;cursor:pointer}
+.psb span{flex:1;font-size:15px}
+.pscroll{flex:1;overflow-y:auto;padding-bottom:8px}
+.pchips{display:flex;gap:8px;overflow-x:auto;padding:4px 10px 10px;scrollbar-width:none}
+.pchip{flex:none;height:32px;padding:0 13px;border-radius:9px;border:1px solid #5d5f66;display:flex;align-items:center;font-size:13px;cursor:pointer}
+.pchip.on{background:#444a5e;border-color:#444a5e}
+.pfav{display:flex;align-items:center;justify-content:space-between;padding:6px 14px}
+.pfav span{color:#a8c7fa;font-size:13px;display:flex;align-items:center;gap:2px}
+.pfav span svg{width:18px;height:18px;fill:currentColor}
+.pfav b{font-weight:400;background:#2b2c31;border-radius:17px;height:34px;padding:0 16px;display:flex;align-items:center;font-size:12px;cursor:pointer}
+.padd{width:64px;margin:6px 16px 4px;text-align:center;font-size:11px;color:#c4c7c5}
+.padd i{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 4px;border-radius:50%;background:#2b2c31}
+.padd svg{width:22px;height:22px;fill:#e3e3e3}
+.psec{color:#a8c7fa;font-size:13px;padding:14px 16px 8px}
+.plist{padding:0 10px}
+.pr{display:flex;align-items:center;gap:14px;background:#2b2c31;padding:8px 16px;min-height:56px;margin-bottom:2px;border-radius:4px;cursor:pointer}
+.plist .pr:first-child{border-radius:20px 20px 4px 4px}
+.plist .pr:last-child{border-radius:4px 4px 20px 20px}
+.pav{width:36px;height:36px;border-radius:50%;background:#3b3c42;display:grid;place-items:center;flex:none}
+.pav svg{width:20px;height:20px;fill:#a9abb3}
+.pav.biz{background:#6a3fd1}.pav.biz svg{fill:#fff}
+.pr .m{flex:1;min-width:0}
+.pr .n{font-size:15px;display:flex;align-items:center;gap:6px}
+.pr .n i{width:12px;height:9px;border:1.5px solid #8b8d94;border-radius:2px}
+.pr .s{font-size:12px;color:#a9abb3;margin-top:2px}
+.pr .s.miss{color:#f2a5a0}
+.pr>svg{width:20px;height:20px;fill:#c4c7c5}
+.pnav{flex:none;display:flex;background:#1c1d21;padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px))}
+.pn{flex:1;text-align:center;font-size:11px;color:#c4c7c5;cursor:pointer}
+.pn i{display:grid;place-items:center;width:56px;height:30px;border-radius:15px;margin:0 auto 4px}
+.pn.act i{background:#444a5e}
+.pn svg{width:22px;height:22px;fill:currentColor}
+.pad{position:absolute;inset:0;background:#111215f2;transform:translateY(110%);transition:transform .3s cubic-bezier(.2,0,0,1);display:flex;flex-direction:column}
+.pad.open{transform:none}
+.psug{flex:1;padding:36px 14px 0;color:#a8c7fa;font-size:13px}
+.psug .pr{border-radius:16px;margin-top:10px;color:#e3e3e3}
+.pkp{background:#25262b;border-radius:28px 28px 0 0;padding:6px 14px 18px;max-width:560px;width:100%;margin:0 auto}
+.pdp{height:48px;display:flex;align-items:center;justify-content:center;position:relative;font-size:28px;letter-spacing:1px}
+.pdp svg{position:absolute;right:6px;width:26px;height:26px;fill:#a9abb3;cursor:pointer}
+.pkg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pk{height:54px;border-radius:27px;background:#101114;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:23px;line-height:1;cursor:pointer;user-select:none}
+.pk:active{background:#2c2d33}
+.pk small{font-size:9px;color:#c4c7c5;letter-spacing:1px;height:11px;margin-top:3px}
+.pgo{margin:12px auto 0;width:150px;height:50px;border-radius:25px;background:#6dd58c;color:#00391a;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;cursor:pointer}
+.pgo svg{width:20px;height:20px;fill:currentColor}
+.drawer{position:absolute;inset:0;pointer-events:none}
+.drawer.open{pointer-events:auto}
+.dscrim{position:absolute;inset:0;background:#0009;opacity:0;transition:.3s}
+.drawer.open .dscrim{opacity:1}
+.dpanel{position:absolute;left:0;top:0;bottom:0;width:min(320px,84%);background:#1f2025;border-radius:0 24px 24px 0;padding:calc(28px + env(safe-area-inset-top,0px)) 12px;transform:translateX(-105%);transition:transform .3s cubic-bezier(.2,0,0,1)}
+.drawer.open .dpanel{transform:none}
+.dpanel h4{font-size:24px;font-weight:400;margin:0 0 20px 16px}
+.di{display:flex;align-items:center;gap:16px;height:52px;padding:0 16px;font-size:15px;cursor:pointer;border-radius:26px}
+.di:active{background:#ffffff14}
+.di svg{width:22px;height:22px;fill:#c4c7c5}
+.act .row{min-height:72px}.act .row .a{font-size:17px}.act .row .b{font-size:13px}
+.act .end{font-size:11px;line-height:1.3;max-width:64px;color:var(--fg)}.act .end svg{width:22px;height:22px}
+body{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none;touch-action:manipulation}
+input{user-select:text;-webkit-user-select:text}
+.row,.pr,.pk,.rb,.pl,.di,.pchip,.pgo,.chip,.sw,.bt button,.btn,.pn i,.ib{position:relative;overflow:hidden}
+.rp{position:absolute;border-radius:50%;background:rgba(255,255,255,.22);transform:scale(0);animation:rp .6s ease-out forwards;pointer-events:none}
+@keyframes rp{to{transform:scale(1);opacity:0}}
+.prog i{animation:fl 1.1s .2s cubic-bezier(.2,0,0,1) both}
+@keyframes fl{from{width:0}}
+.wd{transform-origin:168px 142px;animation:sp 40s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.lkm svg{animation:up .7s .05s both}.lkm h2{animation:up .7s .15s both}.lkm p{animation:up .7s .25s both}.lkb{animation:up .7s .35s both}
+.gr{width:32px;height:4px;border-radius:2px;background:#5a5d6a;margin:-12px auto 18px}
+.mc{margin:2px 0 18px}
+.bt button{min-width:76px;height:40px;display:grid;place-items:center}
+.sp2{display:block;width:16px;height:16px;border-radius:50%;border:2px solid #062e6f55;border-top-color:#062e6f;animation:r .8s linear infinite}
+.er::before{content:"!";display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:#f28b82;color:#2b2d33;font-size:11px;font-weight:700;margin-right:6px;vertical-align:1px}
+.screen[data-name="dw"]{--bg:#0f1119;--fg:#e8eaf0;--sub:#a9abb8;--bar:#232634;--acc:#aab4ff}
+.screen[data-name="ct"],.screen[data-name="ps"],.screen[data-name="call"]{--bg:#1c1d21;--fg:#e3e3e3;--sub:#a9abb8;--bar:#2b2c31;--acc:#a8c7fa;--card:#2b2c31;--line:#4a4c5a}
+.row.ro{cursor:default}.row.ro:active{background:none}
+.psb input{flex:1;background:none;border:0;outline:0;color:#e3e3e3;font-size:15px;min-width:0}
+.tg2{width:52px;height:32px;border-radius:16px;border:2px solid #8e91a0;position:relative;flex:none;transition:.2s}
+.tg2 i{position:absolute;top:6px;left:6px;width:16px;height:16px;border-radius:50%;background:#8e91a0;transition:.2s}
+.tg2.on{background:#a8c7fa;border-color:#a8c7fa}.tg2.on i{left:22px;top:2px;width:24px;height:24px;background:#062e6f}
+.mod{position:fixed;inset:0;background:#0009;display:grid;place-items:center;z-index:20;animation:fi .2s}
+@keyframes fi{from{opacity:0}}
+.mb{background:#2b2d33;color:#e6e6ee;border-radius:28px;padding:24px;width:min(88%,360px)}
+.mb h4{margin:0 0 12px;font-size:22px;font-weight:400}.mb p{margin:0 0 20px;font-size:14px;line-height:1.55;color:#c4c7c5}
+.ma{display:flex;justify-content:flex-end;gap:8px}.ma span{color:#8ab4f8;padding:10px 14px;border-radius:20px;cursor:pointer;font-size:14px;font-weight:500}.ma span:active{background:#ffffff14}
+.cl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:calc(12vh + env(safe-area-inset-top,0px)) 24px calc(40px + env(safe-area-inset-bottom,0px));background:linear-gradient(#1c1d21,#101114);color:#e3e3e3}
+.cav{width:96px;height:96px;border-radius:50%;background:#3b3c42;display:grid;place-items:center}.cav svg{width:52px;height:52px;fill:#a9abb3}
+.cn{font-size:28px;margin:24px 0 8px;text-align:center}.cs{font-size:15px;color:#a9abb3}
+.cg{display:flex;gap:28px;margin-top:auto}
+.cb2{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;color:#c4c7c5;cursor:pointer}
+.cb2 i{width:60px;height:60px;border-radius:50%;background:#2b2c31;display:grid;place-items:center;transition:.2s}
+.cb2.on i{background:#a8c7fa}.cb2.on svg{fill:#062e6f}.cb2 svg{width:26px;height:26px;fill:#e3e3e3}
+.end2{width:68px;height:68px;border-radius:50%;background:#e5484d;display:grid;place-items:center;margin-top:36px;cursor:pointer}
+.end2 svg{width:30px;height:30px;fill:#fff;transform:rotate(135deg)}
+.hero{display:flex;align-items:center;gap:16px;margin:12px 20px 4px}
+.hic{width:60px;height:60px;border-radius:20px;background:color-mix(in srgb,var(--acc) 22%,transparent);display:grid;place-items:center;flex:none;overflow:hidden}
+.hic>svg{width:30px;height:30px;fill:var(--acc)}
+.hic .ap{width:60px;height:60px;border-radius:0}
+.ht{font-size:22px;line-height:1.3;margin-bottom:6px}
+.tag{display:inline-flex;align-items:center;gap:5px;background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);border-radius:12px;padding:4px 10px;font-size:12px}
+.tag svg{width:13px;height:13px;fill:currentColor}
+.hval{margin:14px 20px 4px;line-height:1.2}
+.vc{background:var(--card);border-radius:24px;margin:12px 16px;padding:18px 16px}
+.vc>svg{width:100%;display:block}
+.vt{font-size:13px;color:var(--sub);text-align:center;margin-top:10px}
+.pbar{height:10px;border-radius:5px;background:var(--line)}.pbar i{display:block;height:100%;border-radius:5px;background:var(--acc);min-width:10px}
+.wk{display:flex;justify-content:space-around}
+.wk i{display:grid;place-items:center;width:44px;height:44px;border:2px dashed var(--line);border-radius:50%;font-style:normal;color:var(--sub)}
+.dv{display:flex;align-items:center;gap:18px}.dv>svg{width:44px;flex:none}
+.grp{margin:0 16px}
+.gi{display:flex;align-items:center;gap:12px;background:var(--card);padding:14px 18px;min-height:56px;margin-bottom:2px;border-radius:4px;cursor:pointer;position:relative;overflow:hidden}
+.gi:first-child{border-radius:20px 20px 4px 4px}.gi:last-child{border-radius:4px 4px 20px 20px}.gi:only-child{border-radius:20px}
+.gi .tx{flex:1;min-width:0}.gi .a{font-size:15px}
+.gv{font-size:13px;color:var(--sub);text-align:right;max-width:48%}
+.gi>svg{width:16px;height:16px;fill:var(--sub);flex:none}
+.tip{display:flex;gap:14px;background:var(--card);border-radius:20px;margin:10px 16px;padding:16px}
+.tip b{width:32px;height:32px;border-radius:50%;background:var(--acc);color:var(--bg);display:grid;place-items:center;flex:none}
+.tip .a{font-size:16px}.tip .b{font-size:13px;color:var(--sub);margin-top:4px;line-height:1.5}
+.mapc{position:relative;margin:12px 16px;border-radius:24px;overflow:hidden}
+.mapc .map{margin:0;height:210px}
+.mapc .tag{position:absolute;left:12px;top:12px;background:#0f1119d9;color:#7fe08a}
+.rb2{display:flex;align-items:center;justify-content:center;gap:8px;margin:18px auto 0;width:140px;height:44px;border-radius:22px;background:#6dd58c;color:#00391a;cursor:pointer;font-size:14px;font-weight:500}
+.rb2 svg{width:20px;height:20px;fill:currentColor}
+.vc .pav svg{width:34px;height:34px}
+
+.ft{display:flex;gap:8px;align-items:flex-start;margin:22px 20px 8px;color:var(--sub);font-size:12px;line-height:1.5}.ft svg{flex:none;margin-top:2px}
+.xh{font-size:30px;font-weight:400;margin:24px 20px 12px}
+.nt{position:relative;margin:12px 16px;border-radius:28px;padding:20px;background:linear-gradient(160deg,#171c40,#3b2f6b);color:#fff;text-align:center;overflow:hidden}
+.st{position:absolute;inset:0;background:radial-gradient(#fff 1px,transparent 1.6px) 14px 22px/70px 54px,radial-gradient(#ffffffaa 1px,transparent 1.4px) 40px 8px/110px 80px;opacity:.5}
+.nth{position:relative;display:flex;align-items:center;gap:8px;font-size:16px}
+.dial{position:relative;width:min(100%,260px);margin:6px auto 0;display:block}
+.ntc{position:relative;font-size:14px;color:#cdd5ff}
+.dys{display:flex;justify-content:space-between;margin:14px 20px}
+.dys div{text-align:center;cursor:pointer}.dys b{display:block;font-weight:400;font-size:12px;color:var(--sub);margin-bottom:6px}
+.dys i{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:color-mix(in srgb,var(--acc) 25%,transparent);color:var(--acc)}
+.sc{margin:12px 16px;padding:16px;border-radius:24px;background:var(--card)}
+.sch{display:flex;align-items:center;gap:10px}.sch .off{margin-left:auto;background:var(--line);padding:3px 10px;border-radius:10px;font-size:12px}
+.tt{display:flex;gap:8px;margin-top:12px}
+.ax{position:relative;width:40px;margin-top:28px}.ax span{position:absolute;font-size:10px;color:var(--sub)}
+.col{flex:1;text-align:center;cursor:pointer}.col em{display:block;font-style:normal;font-size:12px;height:28px;color:var(--sub)}
+.bx{height:140px;border:2px dashed var(--line);border-radius:14px;display:grid;place-items:center;color:var(--sub)}.bx small{font-size:10px;line-height:1.4}
+.ics{display:flex;gap:22px;margin:6px 20px}.ics div{text-align:center;font-size:12px;color:var(--sub)}.ics i{display:grid;place-items:center;width:54px;height:54px;border-radius:50%;background:var(--card);color:var(--fg);margin-bottom:6px}
+.bk{margin:12px 16px;border-radius:24px;background:var(--card);padding:18px}
+.bn{display:flex;align-items:baseline;gap:8px}.bn b{font-size:54px;font-weight:400;color:#f28b82}.bn span{color:var(--sub)}
+.dm{display:grid;grid-template-columns:repeat(19,1fr);gap:6px;margin-top:10px}.dm i{aspect-ratio:1;border-radius:50%;background:var(--line)}.dm i.bd{background:#f28b82;box-shadow:0 0 0 4px #f28b8244}
+.ba{display:flex;align-items:center;gap:14px;margin:12px 16px;padding:14px;border-radius:20px;border:1px solid #f28b8266;cursor:pointer}.ba .tx{flex:1}.ba .b{font-size:12px;color:var(--sub)}
+.bi{position:relative;width:46px;height:46px;border-radius:12px;background:#5a5d6a;color:#fff;display:grid;place-items:center;font-size:20px;flex:none}.bi u{position:absolute;right:-5px;bottom:-5px;width:20px;height:20px;border-radius:50%;background:#e5484d;display:grid;place-items:center}
+.rp2{background:#e5484d22;color:#f28b82;padding:4px 10px;border-radius:10px;font-size:12px}
+.two{display:flex;gap:12px;margin:12px 16px}.two>div{flex:1}
+.tc{border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:6px;cursor:pointer}.tc.g{background:#1e5b3a;color:#d6f5e1}.tc.b{background:#1f3f7a;color:#d9e6ff}
+.tc i{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#ffffff26}.tc b{font-size:18px;font-weight:500}.tc small{font-size:12px;opacity:.8}
+.av3{display:flex;margin-top:8px}.av3 s{width:24px;height:24px;border-radius:50%;background:#ffffff55;border:2px solid #0004;margin-right:-8px}
+.em{display:flex;align-items:center;gap:12px;margin:0 16px;padding:14px 16px;border-radius:18px;background:#e5484d22;color:#f28b82}.em b{font-size:22px}.em span{font-size:12px}
+.ctl{display:flex;align-items:center;gap:14px;margin:0 16px;padding:12px 14px;border-radius:18px;background:var(--card)}
+.ok2{display:inline-block;background:#34a85326;color:#34a853;padding:2px 9px;border-radius:9px;font-size:11px}
+.dvh{display:flex;flex-direction:column;align-items:center;margin:14px 0 6px;gap:10px}
+.tl2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 16px}.tl2>div{background:var(--card);border-radius:18px;padding:14px;font-size:12px;color:var(--sub)}.tl2 b{display:block;color:var(--fg);font-size:20px;font-weight:400;margin-top:4px}
+.emp{margin:6px 16px;border:2px dashed var(--line);border-radius:20px;padding:18px;text-align:center;color:var(--sub);font-size:13px}
+.mpf{position:relative;height:330px;overflow:hidden}.mpf svg{width:100%;height:100%;display:block}
+.acr{position:absolute;left:50%;top:70%;width:150px;height:150px;margin:-75px;border-radius:50%;background:#4a7bff2e;border:2px solid #4a7bff88;animation:pl 2.4s ease-out infinite}
+@keyframes pl{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.15);opacity:.2}}
+.mpf .tag2{position:absolute;left:14px;top:14px;background:#0f1119d9;color:#7fe08a;padding:5px 12px;border-radius:14px;font-size:12px}
+.sh2{position:relative;margin-top:-26px;background:var(--bg);border-radius:28px 28px 0 0;padding:20px 20px 8px}
+.r3 b{font-size:20px;font-weight:500;display:block}.r3 small{color:var(--sub);font-size:13px}
+.who{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:14px}.av4{width:34px;height:34px;border-radius:50%;background:var(--acc);color:var(--bg);display:grid;place-items:center}
+.btn2{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:24px;border:1px solid var(--line);color:var(--sub);cursor:pointer}
+.fl{margin:8px 0}.fh{color:var(--acc);font-size:13px;padding:10px 20px}
+.fr{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line);cursor:pointer}.fr>div:first-child{flex:1}.fr .a{font-size:16px}.fr .b{font-size:12px;color:var(--sub);margin-top:3px}
+.rg{position:relative;width:min(70%,240px);margin:18px auto 8px}.rg svg{display:block;width:100%}
+.rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.rc b{font-size:34px;font-weight:400}.rc span{font-size:12px;color:var(--sub)}
+.wc{display:flex;justify-content:space-between;margin:10px 24px;cursor:pointer}.wc div{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--sub)}.wc i{display:block;width:16px;height:56px;border-radius:8px;background:#ff9100}
+.stp{margin:0 20px}.stp div{position:relative;display:flex;align-items:center;padding:12px 0 12px 22px;margin-left:12px;font-size:14px;border-left:2px solid var(--line)}.stp b{position:absolute;left:-14px;width:26px;height:26px;border-radius:50%;background:#ff9100;color:#000;display:grid;place-items:center;font-size:13px}
+.ah{display:flex;flex-direction:column;align-items:center;margin:20px 0 10px}.ah .ap{width:84px;height:84px}.ah .ap>*{transform:scale(2.2)}.ah h2{font-weight:400;font-size:26px;margin:14px 0 2px}.at{font-size:34px;color:var(--acc)}
+.hb{display:flex;align-items:flex-end;gap:3px;height:84px;margin:18px 20px 0}.hb i{flex:1;background:var(--acc);border-radius:3px 3px 0 0;opacity:.85}
+.hx{display:flex;justify-content:space-between;margin:4px 20px;font-size:10px;color:var(--sub)}
+.ti3{display:flex;gap:10px;margin:14px 16px}.ti3 div{flex:1;background:var(--card);border-radius:16px;padding:12px;font-size:11px;color:var(--sub);text-align:center}.ti3 b{display:block;font-size:22px;font-weight:400;color:var(--fg)}
+.lim{display:flex;align-items:center;gap:14px;margin:6px 16px;padding:14px 16px;border-radius:18px;background:var(--card);cursor:pointer}.lim>div{flex:1}.lim .b{font-size:12px;color:var(--sub)}
+.dh{margin:20px}.dd{color:var(--sub);font-size:14px}.dh b{font-size:42px;font-weight:400}
+.sbar{display:flex;height:22px;border-radius:11px;overflow:hidden;margin:0 20px;gap:2px}.sbar i{display:block;height:100%}
+.lg{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;margin:18px 20px}.lg div{display:flex;align-items:center;gap:8px;font-size:13px}.lg s{width:10px;height:10px;border-radius:50%}.lg em{margin-left:auto;font-style:normal;color:var(--sub)}
+.age{display:flex;flex-direction:column;align-items:center;margin:22px 0 14px;gap:8px}.age b{display:grid;place-items:center;width:104px;height:104px;border-radius:26px;background:#0b8043;color:#fff;font-size:38px}.age span{color:var(--sub);font-size:13px}
+.flw{display:flex;align-items:center;justify-content:space-between;margin:10px 16px;padding:16px 10px;border-radius:24px;background:var(--card);font-size:11px;text-align:center}.flw div{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}.flw i{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--line)}.flw .lk2 i{background:#f9ab00;color:#000}.flw u{text-decoration:none;color:var(--sub)}
+.chs{display:flex;flex-wrap:wrap;gap:8px;margin:0 20px}.chs span{padding:9px 14px;border-radius:18px;border:1px solid var(--line);font-size:13px;cursor:pointer}
+.cmp{display:flex;gap:12px;margin:18px 16px}.cd{flex:1;position:relative;border:2px solid var(--line);border-radius:22px;padding:18px 12px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px}.cd.on{border-color:#ff4e45;background:#ff4e4514}.cd s{position:absolute;right:10px;top:8px;text-decoration:none;color:#ff4e45}.cd i{color:#ff4e45}.cd small{color:var(--sub);font-size:12px}
+.bl{margin:0 24px;color:var(--sub);font-size:14px;line-height:1.9}
+.br{margin:16px;border-radius:18px;overflow:hidden;border:1px solid var(--line)}.ad{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);font-size:13px;color:var(--sub)}.pg{display:flex;flex-direction:column;align-items:center;gap:8px;padding:30px 20px}.pg small{color:var(--sub)}
+.seg{display:flex;margin:6px 16px;border:1px solid var(--line);border-radius:22px;overflow:hidden}.seg span{flex:1;text-align:center;padding:12px 4px;font-size:12px;cursor:pointer}.seg .on{background:var(--acc);color:var(--bg);font-weight:600}
+.sb2{display:flex;align-items:center;gap:12px;margin:18px 16px 10px;padding:0 18px;height:50px;border-radius:25px;background:var(--card);color:var(--sub)}.sb2 b{color:#4285f4;font-size:20px}.sb2 span{flex:1}
+.sf{display:inline-flex;align-items:center;gap:6px;margin:4px 20px 12px;color:#34a853;background:#34a85320;padding:6px 12px;border-radius:14px;font-size:13px}
+.rs{position:relative;margin:0 16px;padding:14px;border-radius:20px;background:var(--card);overflow:hidden}.rr{filter:blur(3px);margin-bottom:16px}.rr i{display:block;height:10px;border-radius:5px;background:var(--line);margin-bottom:8px}
+.ov2{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#0006;color:#fff}
+.gm{display:grid;place-items:center;margin:22px 0 10px;height:150px;background:radial-gradient(circle,#7b6cf544,transparent 65%)}
+.cl2{display:flex;flex-wrap:wrap;gap:10px;margin:0 20px}.cl2 span{padding:10px 14px;border-radius:16px;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}.cl2 .y{background:#4285f426;color:#8ab4f8}.cl2 .n{border:1px dashed var(--line);color:var(--sub)}
+.wv{display:flex;align-items:center;justify-content:center;gap:4px;height:80px;margin-top:22px}.wv i{width:5px;border-radius:3px;background:linear-gradient(#4285f4,#ea4335)}
+.mk{display:grid;place-items:center;width:72px;height:72px;margin:6px auto;border-radius:50%;background:#fff;color:#4285f4;box-shadow:0 4px 20px #4285f455}
+.tl3{display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:22px;border:2px solid var(--line);cursor:pointer}.tl3 b{font-weight:500;font-size:15px}.tl3 span{font-size:22px;color:var(--sub)}.tl3.on{background:#4285f41f;border-color:#4285f4}.tl3.on span{color:#8ab4f8}
+.idc{position:relative;margin:16px;padding:26px 16px 18px;border-radius:24px;background:linear-gradient(135deg,#2c3a7a,#5b3f9a);color:#fff;text-align:center;overflow:hidden}.rib{position:absolute;left:-28px;top:14px;transform:rotate(-35deg);background:#f9ab00;color:#000;font-size:10px;padding:3px 30px;font-weight:600}.av5{display:grid;place-items:center;width:72px;height:72px;margin:0 auto 10px;border-radius:50%;background:#ffffff26}.idc small{display:block;opacity:.7;margin-top:2px}
+.kv{margin:4px 20px}.kv div{display:flex;align-items:baseline;gap:6px;padding:12px 0;font-size:14px;cursor:pointer}.kv i{flex:1;border-bottom:2px dotted var(--line)}.kv em{font-style:normal;color:var(--sub)}
+.car{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:20px 20px 8px}.car div{flex:0 0 78%;scroll-snap-align:center;border-radius:28px;padding:24px;color:#fff;min-height:270px;display:flex;flex-direction:column;gap:12px}.car span{font-size:12px;opacity:.7}.car b{font-size:22px;font-weight:500;margin-top:auto}.car p{margin:0;font-size:14px;line-height:1.6;opacity:.9}
+.bc{position:relative;display:flex;align-items:center;gap:14px;margin:12px 16px;padding:16px 16px 16px 22px;border-radius:20px;background:#2b2c31;overflow:hidden}.bcs{position:absolute;left:0;top:0;bottom:0;width:6px;background:#6a3fd1}.bc .tx{flex:1}.bc .a{font-size:16px}.bc .b{font-size:12px;color:var(--sub);margin:2px 0 6px}
+.cc{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#6dd58c;cursor:pointer}.cc svg{width:22px;height:22px;fill:#00391a}
+.bc.ad{border:2px dashed #4a4c5a;background:none;justify-content:center;color:var(--sub);cursor:pointer;font-size:14px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="menu" id="menu"><div id="mTh">テーマ切り替え</div></div>
+<div class="toast" id="toast"></div>
+<script>
+const I={
+ help:'<path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/>',
+ more:'<path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>',
+ back:'<path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>',
+ chev:'<path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>',
+ timer:'<path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.96 8.96 0 0012 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a8.994 8.994 0 007.03-14.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>',
+ moon:'<path d="M9.37 5.51A7.35 7.35 0 009.1 7.5c0 4.08 3.32 7.4 7.4 7.4.68 0 1.35-.09 1.99-.27A7.014 7.014 0 0112 19c-3.86 0-7-3.14-7-7 0-2.93 1.81-5.45 4.37-6.49zM12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/>',
+ school:'<path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>',
+ block:'<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.902 7.902 0 014 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.902 7.902 0 0120 12c0 4.42-3.58 8-8 8z"/>',
+ contact:'<path d="M20 0H4v2h16V0zM4 24h16v-2H4v2zM20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 2.75c1.24 0 2.25 1.01 2.25 2.25s-1.01 2.25-2.25 2.25S9.75 10.24 9.75 9 10.76 6.75 12 6.75zM17 17H7v-1.5c0-1.67 3.33-2.5 5-2.5s5 .83 5 2.5V17z"/>',
+ phone:'<path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/>',
+ pin:'<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/>',
+ gear:'<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1112 8.4a3.6 3.6 0 010 7.2z"/>',
+ info:'<path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>',
+ person:'<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>',
+ hour:'<path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4z"/>',
+ fam:'<path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z"/>',
+ exp:'<path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>',
+ dw:'<path d="M12 2a2 2 0 110 4 2 2 0 010-4zm7 7h-5v13h-2v-6h-2v6H8V9H3V7h18v2z"/>'
+};
+I.call='<path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>';
+I.fl='<rect x="5" y="5" width="14" height="14" rx="3.5" transform="rotate(45 12 12)"/><path d="M12 4.6l-6.6 6.6 2.2 2.2 6.6-6.6z" fill="#fff" opacity=".4"/>';
+I.menu='<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>';
+I.mic='<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15a.998.998 0 00-.98-.85c-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08a6.993 6.993 0 005.91-5.78c.1-.6-.39-1.14-1-1.14z"/>';
+I.padd='<path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>';
+I.home='<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>';
+I.dial='<path d="M12 19c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 1c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12-8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-6 8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>';
+I.bksp='<path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59z"/>';
+I.bld='<path d="M17 11V3H7v4H3v14h8v-4h2v4h8V11h-4zM7 19H5v-2h2v2zm0-4H5v-2h2v2zm0-4H5V9h2v2zm4 4H9v-2h2v2zm0-4H9V9h2v2zm0-4H9V5h2v2zm4 8h-2v-2h2v2zm0-4h-2V9h2v2zm0-4h-2V5h2v2zm4 12h-2v-2h2v2zm0-4h-2v-2h2v2z"/>';
+I.ppl='<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>';
+I.hist='<path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>';
+I.up='<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>';
+I.vol='<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8v8a4.47 4.47 0 002.5-4z"/>';
+I.chat='<path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>';
+I.lock='<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>';
+const svg=(n,c='ic')=>`<svg class="${c}" viewBox="0 0 24 24">${I[n]}</svg>`;
+const $=(h)=>{const t=document.createElement('div');t.innerHTML=h.trim();return t.firstChild};
+const today=(()=>{const d=new Date();return `今日（${d.getMonth()+1}月${d.getDate()}日）`})();
+const app=document.getElementById('app');
+const stack=[];
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('s');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('s'),1600)};
+
+function bar(title,back){
+  return `<div class="bar">${back?`<button class="ib" data-back>${svg('back','')}</button>`:''}<div class="t">${title}</div>${back?'<div class="sp"></div>':''}<button class="ib" data-help>${svg('help','')}</button><button class="ib" data-more>${svg('more','')}</button></div>`;
+}
+function row(ic,a,b,go,extra=''){return `<div class="row" ${go?`data-go="${go}"`:''}>${ic?svg(ic):''}<div class="tx"><div class="a">${a}</div>${b?`<div class="b">${b}</div>`:''}</div>${extra}</div>`}
+const info=t=>`<div class="info">${svg('info','')}<div>${t}</div></div>`;
+
+const mapSvg=`<svg viewBox="0 0 400 130" preserveAspectRatio="xMidYMid slice"><rect width="400" height="130" fill="#2b2e35"/><g stroke="#3d4149" stroke-width="7" fill="none"><path d="M-10 90 L420 40"/><path d="M120 -10 L170 140"/><path d="M280 -10 L250 140"/><path d="M-10 30 L420 110"/></g><g stroke="#363a42" stroke-width="3" fill="none"><path d="M0 60 L400 70"/><path d="M60 0 L40 130"/><path d="M340 0 L360 130"/></g><g transform="translate(200 20)"><path d="M0 0c-14 0-24 10-24 24 0 18 24 38 24 38s24-20 24-38C24 10 14 0 0 0z" fill="#fff"/><circle cx="0" cy="24" r="17" fill="#2fa84f"/><circle cx="0" cy="24" r="8" fill="#fff" opacity=".85"/></g><circle cx="200" cy="92" r="9" fill="#4a7bff" stroke="#fff" stroke-width="3"/></svg>`;
+
+const SHEET=`<div class="sheet"><div id="scrim"></div><div class="sh"><div class="gr"></div><div class="mc"><i>y</i>yukitann412@gmail.com</div><div class="fld"><input id="pw" type="password" placeholder="パスワードを入力" autocomplete="off"></div><div class="er" id="err">パスワードが違います。もう一度お試しください。</div><div class="r2" id="eye"><div class="cb off">✓</div>パスワードを表示</div><div class="bt"><span id="forgot">パスワードをお忘れの場合</span><button id="next">次へ</button></div></div></div>`;
+const screens={
+main:()=>`${bar('保護者による使用制限',1)}<div class="body"><div class="in">
+<h1>保護者による使用制限</h1>
+<p class="d">保護者があなたのデバイスに設定した管理機能の設定を確認しましょう</p>
+<div class="chip" data-go="dw">${svg('dw','')}Digital Wellbeing に移動</div>
+<div class="sec" style="margin-top:26px">このデバイスの利用時間</div>
+<div class="big" style="color:#ffa24d">2h<small>2h</small></div><div class="prog"><i style="width:100%;background:#ff9100"></i></div>
+${row('', 'アプリのアクティビティ','','activity','<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">'+I.chev+'</svg>')}
+<div class="sec">利用時間の設定</div>
+${row('timer','1日の利用時間の上限','2時間','limit')}
+${row('moon','休息時間','23:00〜5:00','x:休息時間|23:00〜5:00|休息時間中は、このデバイスは使えなくなります。')}
+${row('school','スクールタイム','スクールタイム: OFF','x:スクールタイム|OFF|スクールタイムをONにすると、登校中はデバイスの機能が制限されます。')}
+${row('block','ブロックされているアプリ','1/95 個のアプリ','x:ブロックされているアプリ|1/95 個のアプリ|ブロック中: サンプルゲーム。ブロックされたアプリは開けません。')}
+<div class="sec">管理機能</div>
+${row('contact','連絡先、電話と SMS','保護者によって管理されている<br>コミュニケーション設定','x:連絡先、電話と SMS||通話と SMS は、保護者の方が承認した連絡先とのみ利用できます。')}
+${row('phone','ログインしているデバイス','管理対象のデバイス: 1 台','x:ログインしているデバイス|管理対象のデバイス: 1 台|このデバイス（Android）が管理対象です。')}
+${row('pin','現在地の共有','ON · 保護者が確認できます','x:現在地の共有|ON · 保護者が確認できます|保護者の方は、ファミリーリンク アプリでこのデバイスの現在地を確認できます。')}
+<div class="map" data-go="x:現在地の共有|ON · 保護者が確認できます|保護者の方は、ファミリーリンク アプリでこのデバイスの現在地を確認できます。" style="cursor:pointer">${mapSvg}</div>
+${row('pin','位置情報の設定','位置情報サービスの設定','x:位置情報の設定|ON|位置情報サービスは、現在地の共有のために使われます。')}
+${row('gear','あなたの設定','コンテンツ制限、アカウント設定','family')}
+<div class="row pill" data-go="advanced"><svg class="ic" viewBox="0 0 24 24"><path fill="#4285f4" d="M12 2l5 5-5 5-5-5z"/><path fill="#34a853" d="M7 12l5 5-5 5-5-5z"/><path fill="#fbbc04" d="M17 12l5 5-5 5-5-5z"/></svg><div class="tx"><div class="a">詳細な設定</div><div class="b">Google ファミリーリンク アプリを使用</div></div></div>
+${info('保護者の方はファミリーリンク アプリでこの情報を確認できます。設定を変更するには保護者にお願いしてください。')}
+</div></div>`,
+
+activity:()=>{
+ const ci=(bg,h,r='50%')=>`<div class="ap" style="background:${bg};border-radius:${r}">${h}</div>`;
+ const P='M13.4 3h2.6c.2 1.9 1.4 3.2 3.4 3.4v2.6c-1.3 0-2.5-.4-3.4-1.1v6.3a5.4 5.4 0 1 1-5.4-5.4v2.7a2.7 2.7 0 1 0 2.8 2.7z';
+ const IC={
+ line:ci('#06c755','<svg viewBox="0 0 24 24" width="24" height="24"><ellipse cx="12" cy="11" rx="8.5" ry="6.8" fill="#fff"/><path d="M9 16l-1.5 3.5 5-2.7z" fill="#fff"/><text x="12" y="12.9" font-size="5.2" font-weight="800" text-anchor="middle" fill="#06c755">LINE</text></svg>'),
+ claude:ci('#d97757','<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>'),
+ tt:ci('#000','<svg viewBox="0 0 24 24" width="20" height="20"><path fill="#25f4ee" d="'+P+'" transform="translate(-.8 -.6)"/><path fill="#fe2c55" d="'+P+'" transform="translate(.8 .6)"/><path fill="#fff" d="'+P+'"/></svg>'),
+ yt:ci('#fff','<b style="width:24px;height:17px;border-radius:5px;background:#f00;display:grid;place-items:center"><i style="border-left:7px solid #fff;border-top:4px solid transparent;border-bottom:4px solid transparent"></i></b>'),
+ g:ci('#fff','<span style="color:#4285f4;font-size:20px;font-weight:700">G</span>'),
+ ch:ci('conic-gradient(from -30deg,#ea4335 0 33%,#34a853 0 66%,#fbbc04 0)','<b style="width:18px;height:18px;border-radius:50%;background:#4285f4;border:3px solid #fff;display:block"></b>'),
+ gm:ci('#fff','<span style="color:#ea4335;font-size:18px">M</span>'),
+ mp:ci('#fff','<svg viewBox="0 0 24 24" width="22" height="22" fill="#34a853"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.6" fill="#fff"/></svg>')};
+ const apps=[['LINE','line','1 時間 4 分'],['Claude','claude','16 分'],['YouTube','yt','10 分','1h'],['TikTok','tt','10 分'],['Google','g','7 分']];
+ const more=[['Chrome','ch','6 分'],['Gmail','gm','4 分'],['Google マップ','mp','3 分']];window.ICX=IC;
+ const r=a=>`<div class="row" data-go="x:${a[0]}|今日 ${a[2]}|アプリの利用時間の上限は、保護者の方が設定します。">${IC[a[1]]}<div class="tx"><div class="a">${a[0]}</div><div class="b">${a[2]||'0 分'}</div></div>${a[3]?`<div class="end" style="text-align:center">${svg('hour')}<div>${a[3]}</div></div>`:''}</div>`;
+ return `${bar('アプリのアクティビティ',1)}<div class="body"><div class="in act"><h1>アプリの<br>アクティビティ</h1><div class="sec">${today}</div>${apps.map(r).join('')}
+ <div id="moreL" style="display:none">${more.map(a=>r(a)).join('')}</div>
+ <div class="row" id="showAll" style="gap:16px"><svg class="ic" viewBox="0 0 24 24" style="fill:var(--sub)">${I.exp}</svg><div class="tx"><div class="a" style="font-size:15px">95 個のアプリをすべて表示</div></div></div>
+ ${row('','すべてのアクティビティ履歴','','hist','<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">'+I.chev+'</svg>')}
+ ${info('このデバイスでの今日のアプリのアクティビティを表示します。保護者の方はファミリーリンク アプリを使用して、このリストの確認とアプリの利用時間の上限の編集を行えます。')}</div></div>`},
+
+limit:()=>{
+ const d=['日','月','火','水','木','金','土'];
+ return `${bar('1日の利用時間の上限',1)}<div class="body"><div class="in"><h1 style="font-size:28px">1日の利用時間の上限</h1>
+ <div class="sec">今日</div>${row('timer','2時間','','x:今日の上限|2時間|今日の利用時間の上限です。保護者の方が設定しています。')}
+ <div class="sw" id="sched"><div>1 週間のスケジュール</div><div class="tg"><i></i></div></div>
+ <div id="days">${d.map(x=>`<div class="row" data-tcb style="min-height:52px"><div style="width:18px;color:var(--sub);font-size:14px">${x}</div><div class="tx"><div class="a">2時間</div></div><div class="div"></div><div class="cb" data-cb>✓</div></div>`).join('')}</div>
+ ${info('利用時間の上限に達すると、管理対象の Android デバイス、Googlebook、Chromebook がロックされます。ただし、お子様が保護者の方と連絡を取る必要がある場合のために、通話は引き続き可能です。')}
+ ${info('週のスケジュールへの変更は、管理対象のすべてのデバイスに適用されます。今日の設定への変更が適用されるのは、このデバイスのみです。')}</div></div>`},
+
+lock:()=>`<div class="lk"><div class="lkm"><svg viewBox="0 0 300 250" width="110" height="92" aria-hidden="true"><path d="M40 150C28 92 88 22 160 10c72-12 128 38 132 100 4 62-42 124-112 134C108 254 50 230 40 150z" fill="#000"/><ellipse cx="258" cy="52" rx="20" ry="48" transform="rotate(22 258 52)" fill="none" stroke="#5a5a5a" stroke-width="2.5"/><ellipse cx="238" cy="62" rx="12" ry="36" transform="rotate(22 238 62)" fill="none" stroke="#5a5a5a" stroke-width="2.5"/><circle cx="36" cy="105" r="31" fill="none" stroke="#4d4d4d" stroke-width="3"/><path d="M50 80a31 31 0 0 1 0 50 40 40 0 0 0 0-50z" fill="#6c6c6c"/><rect x="136" y="38" width="52" height="17" rx="8" fill="#8b8b8b" transform="rotate(-12 162 46)"/><circle cx="104" cy="86" r="7" fill="#7a7a7a"/><circle cx="206" cy="64" r="7" fill="#7a7a7a"/><circle cx="168" cy="142" r="80" fill="#6d6d6d"/><circle cx="168" cy="142" r="64" fill="#8e8e8e"/><circle cx="168" cy="142" r="56" fill="#a3a3a3"/><path class="wd" d="M168 142V86A56 56 0 0 0 112 142z" fill="#3a3a3a"/></svg><h2>時間切れだよ</h2><p>あなたは今日、このデバイスを <b>2時間</b>つかっているよ</p></div>
+<div class="lkb"><div class="rb" data-go="phone">${svg('call','')}</div><div class="pl" id="req">${svg('timer','')}延長をリクエスト</div><div class="rb" data-go="main">${svg('fl','')}</div></div>
+${SHEET}</div>`,
+
+phone:()=>{
+ const R=[['090-0000-0001','miss','携帯・9月24日 21:05',1],['090-0000-0001','in','携帯・9月22日 18:03',1],['050-0000-0002','in','日本・9月19日 23:06'],['サンプル商店 武蔵小金井','out','日本・9月17日 16:55','biz'],['090-0000-0001','in','携帯・9月5日 12:50',1],['090-0000-0003','out','携帯・9月1日 19:34',1],['090-0000-0001','out','携帯・8月27日 17:25',1],['090-0000-0001','miss','携帯・8月27日 17:24',1],['090-0000-0001','in','携帯・8月24日 12:10',1],['090-0000-0001','miss','携帯・8月18日 11:20',1],['+1 855-000-0000','miss','8月10日 19:44'],['090-0000-0004 (2)','miss','日本・8月4日 11:52',1],['090-0000-0001 (2)','out','携帯・7月25日 20:32',1]];
+ const ar={in:'↙',out:'↗',miss:'↙'};
+ const rows=R.map(r=>`<div class="pr" data-call="${r[0]}" data-t="${r[1]}"><div class="pav${r[3]==='biz'?' biz':''}">${svg(r[3]==='biz'?'bld':'person','')}</div><div class="m"><div class="n">${r[0]}${r[3]===1?'<i></i>':''}</div><div class="s${r[1]==='miss'?' miss':''}">${ar[r[1]]} ${r[2]}</div></div>${svg('call','')}</div>`).join('');
+ const L={2:'ABC',3:'DEF',4:'GHI',5:'JKL',6:'MNO',7:'PQRS',8:'TUV',9:'WXYZ',0:'+'};
+ const keys=['1','2','3','4','5','6','7','8','9','*','0','#'].map(k=>`<div class="pk" data-pk="${k}">${k}<small>${k==='1'?'<svg viewBox="0 0 16 8" width="14" height="8" fill="none" stroke="#c4c7c5" stroke-width="1.4"><circle cx="4" cy="4" r="2.6"/><circle cx="12" cy="4" r="2.6"/><path d="M4 6.6h8"/></svg>':(L[k]||'')}</small></div>`).join('');
+ return `<div class="ph"><div class="pwrap"><div class="psb"><div id="pmenu" style="display:flex">${svg('menu','')}</div><input id="psi" placeholder="連絡先を検索" autocomplete="off"><div id="pmic" style="display:flex">${svg('mic','')}</div></div>
+<div class="pscroll"><div class="pchips"><div class="pchip on">すべて</div><div class="pchip">不在着信</div><div class="pchip">連絡先</div><div class="pchip">迷惑電話ではない通話</div></div>
+<div class="pfav"><span id="pfv">お気に入り ${svg('up','')}</span><b data-go="ct">連絡先を表示</b></div>
+<div class="padd" data-go="ct"><i>${svg('padd','')}</i>追加</div><div class="psec">一昨日以前</div><div class="plist">${rows}</div><div id="pempty" class="info" style="display:none;justify-content:center">該当する通話履歴はありません</div></div>
+<div class="pad"><div class="psug" id="psug"></div><div class="pkp"><div class="pdp"><span id="pv"></span><span id="pbs" style="position:absolute;right:6px;display:flex">${svg('bksp','')}</span></div><div class="pkg">${keys}</div><div class="pgo" id="pgo">${svg('call','')}音声通話</div></div></div></div>
+<div class="pnav"><div class="pn act" id="pHome"><i>${svg('home','')}</i>ホーム</div><div class="pn" id="pKey"><i>${svg('dial','')}</i>キーパッド</div></div>
+<div class="drawer"><div class="dscrim"></div><div class="dpanel"><h4>電話</h4><div class="di" data-go="ct">${svg('ppl','')}連絡先</div><div class="di" data-go="ps">${svg('gear','')}設定</div><div class="di" id="pdel">${svg('hist','')}通話履歴を削除</div><div class="di" id="phelp">${svg('help','')}ヘルプとフィードバック</div></div></div></div>`},
+
+dw:()=>{
+ const D=[['LINE',64,'#4285f4'],['Claude',16,'#db4437'],['TikTok',10,'#f4b400'],['Google',7,'#0f9d58'],['その他',23,'#ab47bc']];
+ const C=2*Math.PI*95,G=3;let acc=0,arcs='',lb='';
+ D.forEach(([n,m,c])=>{const f=m/120,L=f*C-G,off=-(acc*C+G/2);arcs+=`<circle cx="180" cy="180" r="95" fill="none" stroke="${c}" stroke-width="12" stroke-dasharray="${L} ${C-L}" stroke-dashoffset="${off}" transform="rotate(-90 180 180)"/>`;const a=(acc+f/2)*2*Math.PI,x=180+118*Math.sin(a),y=180-118*Math.cos(a)+5;lb+=`<text x="${x}" y="${y}" text-anchor="${Math.sin(a)>0?'start':'end'}" fill="#c9ccd8" font-size="15">${n}</text>`;acc+=f});
+ return `${bar('Digital Wellbeing',1)}<div class="body"><div class="in"><h1 style="font-size:36px">Digital Wellbeing、<br>保護者による使用制限</h1>
+<div class="row" style="gap:18px;min-height:64px"><svg class="ic" viewBox="0 0 24 24" style="fill:#aab4ff"><path d="M4 20V10h4v10H4zm6 0V4h4v16h-4zm6 0v-7h4v7h-4z"/></svg><div class="tx"><div class="a" style="font-size:20px">Digital Wellbeing ツール</div></div></div>
+<svg viewBox="0 0 360 360" style="display:block;width:min(100%,380px);margin:8px auto">${arcs}${lb}<text x="180" y="165" text-anchor="middle" fill="#a9abb8" font-size="14">今日</text><text x="180" y="200" text-anchor="middle" fill="#e8eaf0" font-size="30">2 時間</text></svg>
+<div style="display:flex;text-align:center;margin:18px 0 30px"><div style="flex:1"><div style="font-size:44px">22</div><div style="font-size:15px">ロック解除数</div></div><div style="flex:1"><div style="font-size:44px">95</div><div style="font-size:15px">通知数</div></div></div>
+<div class="row" data-go="activity" style="min-height:64px"><div class="tx"><div class="a" style="font-size:20px">アプリのアクティビティの詳細を表示</div></div></div>
+<div class="row" data-go="x:デバイスを健康的に使用する方法||休息時間やスクールタイムを使って、画面を見る時間にメリハリをつけましょう。"><div class="tx"><div class="a" style="color:#8ab4f8;font-size:16px">デバイスを健康的に使用する方法</div></div></div></div></div>`},
+
+x:()=>{const [t,sub,d]=XK.split('|');let b;if(AK[t])b=appView(t,sub);else if(DAYS[t])b=dayView(t,sub);else if(XS[t])b=XS[t](sub);else b=`<h1 class="xh">${t}</h1><p class="d">${d||''}</p>${ft()}`;return `${bar(t,1)}<div class="body"><div class="in">${b}</div></div>`},
+
+loc:()=>`${bar('現在地の共有',1)}<div class="body"><div class="in"><h1 style="font-size:30px">現在地の共有</h1><div class="map" style="height:220px">${mapSvg}</div><div class="row ro"><div class="tx"><div class="a">現在地の共有</div><div class="b">ON · 保護者が確認できます</div></div></div><div class="banner">${svg('person','')}<div>保護者の方が決めた設定です。変更は、保護者の方にお願いしてください。</div></div>${info('保護者の方は、ファミリーリンク アプリでこのデバイスの現在地を確認できます。')}</div></div>`,
+
+ct:()=>`${bar('連絡先',1)}<div class="body"><div class="in"><h1 class="xh">連絡先</h1><div class="bc"><div class="bcs"></div><div class="pav biz">${svg('bld','')}</div><div class="tx"><div class="a">サンプル商店 武蔵小金井</div><div class="b">日本 · 0422-00-0000</div><span class="ok2">承認済み</span></div><div class="cc" data-call="サンプル商店 武蔵小金井">${svg('call','')}</div></div><div class="bc ad" data-pw>＋ 連絡先を追加（保護者の承認が必要）</div></div></div>`,
+
+ps:()=>{const G=[['通話',[['通話履歴を保存','通話履歴を電話アプリに保存します',1],['発信者番号を表示','相手に自分の番号を通知します',1]]],['音とバイブレーション',[['着信音','端末のデフォルト',1],['バイブレーション','着信時に振動します',1]]],['その他',[['通話の録音の案内','録音時に相手へ音声で知らせます',0]]]];return `${bar('設定',1)}<div class="body"><div class="in"><h1 style="font-size:30px">設定</h1>${G.map(g=>`<div class="sec">${g[0]}</div><div class="grp">${g[1].map(x=>`<div class="gi" data-tg><div class="tx"><div class="a">${x[0]}</div><div class="b" style="font-size:12px;color:var(--sub);margin-top:2px">${x[1]}</div></div><div class="tg2${x[2]?' on':''}"><i></i></div></div>`).join('')}</div>`).join('')}</div></div>`},
+
+call:()=>`<div class="cl"><div class="cav">${svg('person','')}</div><div class="cn">${CALLN}</div><div class="cs" id="cs">発信中…</div><div class="cg">${[['ミュート','mic'],['キーパッド','dial'],['スピーカー','vol']].map(x=>`<div class="cb2" data-ct><i>${svg(x[1],'')}</i>${x[0]}</div>`).join('')}</div><div class="end2" data-endcall>${svg('call','')}</div></div>`,
+
+loading:()=>`${bar('保護者による使用制限',1)}<div class="load"><div class="spin"></div></div>`,
+
+hist:()=>`${bar('すべてのアクティビティ履歴',1)}<div class="body"><div class="in"><h1 style="font-size:28px">アクティビティ履歴</h1>
+ ${['今日','昨日','10月6日','10月5日'].map((x,i)=>{const v=['2時間','1時間 12分','48分','2時間'][i];return row('timer',x,v,'x:'+x+'|'+v+'|その日の利用時間です。')}).join('')}</div></div>`,
+
+family:()=>{
+ const L=[['Google Play','アプリの承認と制限'],['YouTube ファミリー センター','保護者、12 歳以下 / 13 歳以上のお子様向けのツール'],['Google Chrome とウェブ','ウェブサイトとブラウザの制限'],['Google 検索','セーフサーチと設定'],['Gemini','設定と制限'],['Google アシスタント','設定と制限'],['ログインしているデバイス','']];
+ return `${bar('保護者による全使用制限',1)}<div class="body"><div class="in">
+ <div class="banner">${svg('person','')}<div>以下は、保護者の方があなたのために選択した設定です。変更は、保護者の方にお願いしてください。</div></div>
+ <div class="card"><div class="av">🎮</div><div class="mail">example@gmail.com</div><div class="btn" data-go="x:アカウント設定|example@gmail.com|Google アカウントの設定は、保護者の方が管理しています。"><span class="g">G</span>アカウント設定</div></div>
+ <div class="card">${L.map((x,i)=>row(['','','','','','',''][i]===''?'fam':'',x[0],x[1],'x:'+x[0]+'|'+x[1]+'|この項目の設定は、保護者の方が管理しています。').replace(/<svg class="ic"[^>]*>.*?<\/svg>/,'<svg class="ic" viewBox="0 0 24 24" style="fill:var(--sub)">'+I.gear+'</svg>')).join('')}</div>
+ </div></div>`}
+};
+
+let hd=0,CALLN='',XK='';
+const AM={LINE:64,Claude:16,YouTube:10,TikTok:10,Google:7,Chrome:6,Gmail:4,'Google マップ':3},AK={LINE:'line',Claude:'claude',YouTube:'yt',TikTok:'tt',Google:'g',Chrome:'ch',Gmail:'gm','Google マップ':'mp'};
+const DAYC={ic:'timer',v:'bars',rows:[['利用時間','$s'],['ロック解除','22 回'],['通知','95 件']]};
+const PD={
+'休息時間':{ic:'moon',v:'time',rows:[['平日','23:00〜5:00'],['週末','23:00〜5:00'],['休息時間中に使えるアプリ','電話・時計']]},
+'スクールタイム':{ic:'school',v:'week',rows:[['スケジュール','月〜金 8:00〜15:00'],['状態','OFF'],['使えるアプリ','電話・時計・計算機']]},
+'ブロックされているアプリ':{ic:'block',v:'blk',rows:[['サンプルゲーム','ブロック中'],['ほかのアプリ','94 個は利用可能']]},
+'連絡先、電話と SMS':{ic:'contact',rows:[['通話','承認した連絡先のみ'],['SMS','承認した連絡先のみ'],['緊急通報','常に許可']]},
+'ログインしているデバイス':{ic:'phone',v:'dev',rows:[['デバイスの管理','保護者が管理'],['最終使用','たった今']]},
+'現在地の共有':{ic:'pin',v:'map',rows:[['保護者への共有','ON'],['精度','約 10 m'],['最終更新','1 分前']]},
+'位置情報の設定':{ic:'pin',rows:[['位置情報の使用','ON'],['高精度モード','ON'],['位置情報の履歴','OFF']]},
+'今日の上限':{ic:'timer',v:'lim',rows:[['今日','2時間'],['毎週のスケジュール','毎日 2時間'],['上限に達したら','デバイスがロックされます']]},
+'Google Play':{ic:'gear',rows:[['アプリのダウンロード','承認が必要'],['コンテンツの年齢制限','12 歳以上'],['購入','承認が必要']]},
+'YouTube ファミリー センター':{ic:'ppl',rows:[['利用体験','13 歳以上のお子様向け'],['再生履歴','保存しない'],['おすすめ','年齢に合った動画のみ']]},
+'Google Chrome とウェブ':{ic:'gear',rows:[['不適切なサイト','ブロック'],['サイトの許可・ブロック','保護者が管理'],['シークレット モード','OFF']]},
+'Google 検索':{ic:'gear',rows:[['セーフサーチ','ON（変更不可）']]},
+'Gemini':{ic:'gear',rows:[['利用','保護者が許可'],['利用できる機能','年齢に応じた機能のみ']]},
+'Google アシスタント':{ic:'gear',rows:[['利用','ON'],['音声での購入','OFF']]},
+'アカウント設定':{ic:'person',rows:[['アカウント','example@gmail.com'],['種類','保護者が管理するアカウント'],['生年月日','非公開']]},
+'今日':DAYC,'昨日':DAYC,'10月6日':DAYC,'10月5日':DAYC,
+'デバイスを健康的に使用する方法':{ic:'info',v:'tips',rows:[['休息時間を活用する','寝る前の 1 時間は画面を見ないようにしましょう。'],['こまめに休憩する','30 分ごとに目を休めて、体を動かしましょう。'],['通知を減らす','必要のない通知は切って、集中しやすくしましょう。']]}};
+const ic=(n,z=22,c='currentColor')=>`<svg viewBox="0 0 24 24" width="${z}" height="${z}" fill="${c}">${I[n]}</svg>`;
+const ft=(x='保護者の方が決めた設定です。変更は、保護者の方にお願いしてください。')=>`<div class="ft">${ic('lock',14)}<span>${x}</span></div>`;
+const DAYS={'今日':120,'昨日':72,'10月6日':48,'10月5日':120};
+function appView(t,sub){const hs=[...t].reduce((a,c)=>(a*31+c.charCodeAt(0))|0,7),m=AM[t],tm=sub.replace('今日 ',''),pct=Math.round(m/1.2),B=Array.from({length:24},(_,i)=>Math.round(8+(i<7?.05:Math.abs(Math.sin(hs+i*1.7))*(.35+i/36))*72));
+ return `<div class="ah">${window.ICX[AK[t]]}<h2>${t}</h2><div class="at">${tm}</div></div><div class="hb">${B.map(v=>`<i style="height:${v}px"></i>`).join('')}</div><div class="hx"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div><div class="ti3"><div><b>${3+Math.abs(hs)%9}</b>回 起動</div><div><b>${pct}%</b>全体の割合</div><div><b>${Math.max(1,Math.round(m/3))}</b>分 最長</div></div><div class="lim" data-pw>${ic('timer',24)}<div><div class="a">アプリの上限</div><div class="b">${t==='YouTube'?'1 時間':'設定されていません'}</div></div>${ic('lock',16)}</div>${ft()}`}
+function dayView(t,sub){const k=DAYS[t]/120,C=['#06c755','#d97757','#ff3d3d','#25c9d8','#4285f4','#fbbc04','#ea4335','#34a853'],it=Object.keys(AM).map((n,i)=>[n,Math.max(1,Math.round(AM[n]*k)),C[i]]);
+ return `<div class="dh"><div class="dd">${t}の利用時間</div><b>${sub}</b></div><div class="sbar">${it.map(x=>`<i style="flex:${x[1]};background:${x[2]}"></i>`).join('')}</div><div class="lg">${it.map(x=>`<div><s style="background:${x[2]}"></s><span>${x[0]}</span><em>${x[1]} 分</em></div>`).join('')}</div>${ft('その日の利用時間です。')}`}
+const XS={
+'休息時間':()=>{const n=new Date(),h=n.getHours()+n.getMinutes()/60,inn=h>=23||h<5,m=Math.round((23-h)*60),a=(k,r=82)=>{const q=k/24*6.2832-1.5708;return[110+r*Math.cos(q),110+r*Math.sin(q)]},[x1,y1]=a(23),[x2,y2]=a(5),[nx,ny]=a(h);
+ return `<div class="nt"><div class="st"></div><div class="nth">${ic('moon',26,'#cdd5ff')}<span>休息時間</span></div><svg viewBox="0 0 220 220" class="dial"><circle cx="110" cy="110" r="82" fill="none" stroke="#ffffff1f" stroke-width="16"/><path d="M${x1} ${y1}A82 82 0 0 1 ${x2} ${y2}" fill="none" stroke="#b8c4ff" stroke-width="16" stroke-linecap="round"/>${[0,6,12,18].map(k=>{const[x,y]=a(k,56);return`<text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" fill="#ffffff88">${k}</text>`}).join('')}<circle cx="${nx}" cy="${ny}" r="9" fill="#fff"/><text x="110" y="106" text-anchor="middle" font-size="26" fill="#fff">23:00</text><text x="110" y="130" text-anchor="middle" font-size="14" fill="#ffffffb0">〜 5:00</text></svg><div class="ntc">${inn?'いまは休息時間中です':`あと ${m/60|0} 時間 ${m%60} 分で始まります`}</div></div><div class="dys">${['日','月','火','水','木','金','土'].map(k=>`<div data-pw><b>${k}</b><i>${ic('moon',14)}</i></div>`).join('')}</div><p class="d">休息時間中は、電話と時計以外のアプリは開けません。</p>${ft()}`},
+'スクールタイム':()=>`<div class="sc"><div class="sch">${ic('school',26)}<b style="font-weight:500">スクールタイム</b><span class="off">OFF</span></div><div class="tt"><div class="ax">${[8,10,12,14,16].map(k=>`<span style="top:${(k-8)*20}px">${k}:00</span>`).join('')}</div>${['月','火','水','木','金'].map(k=>`<div class="col" data-pw><em>${k}</em><div class="bx"><small>8:00<br>↓<br>15:00</small></div></div>`).join('')}</div></div><div class="sec">スクールタイム中に使えるアプリ</div><div class="ics">${[['call','電話'],['timer','時計'],['gear','電卓']].map(x=>`<div><i>${ic(x[0],26)}</i>${x[1]}</div>`).join('')}</div>${ft()}`,
+'ブロックされているアプリ':()=>`<div class="bk"><div class="bn"><b>1</b><span>/ 95 個のアプリ</span></div><div class="dm">${Array.from({length:95},(_,i)=>`<i class="${i===41?'bd':''}"></i>`).join('')}</div></div><div class="ba" data-pw><div class="bi">サ<u>${ic('lock',12,'#fff')}</u></div><div class="tx"><div class="a">サンプルゲーム</div><div class="b">このアプリは開けません</div></div><span class="rp2">ブロック中</span></div><p class="d">ブロックされたアプリは、アイコンがグレー表示になり起動できなくなります。</p>${ft()}`,
+'連絡先、電話と SMS':()=>`<div class="two"><div class="tc g" data-pw><i>${ic('call',26)}</i><b>通話</b><small>承認した連絡先のみ</small><div class="av3"><s></s><s></s><s></s></div></div><div class="tc b" data-pw><i>${ic('chat',26)}</i><b>SMS</b><small>承認した連絡先のみ</small><div class="av3"><s></s><s></s></div></div></div><div class="em"><b>110 · 119</b><span>緊急通報は、いつでも利用できます</span></div><div class="sec">承認済みの連絡先</div><div class="ctl"><div class="pav biz">${ic('bld',20,'#fff')}</div><div class="tx" style="flex:1"><div class="a">サンプル商店 武蔵小金井</div><div class="b" style="font-size:12px;color:var(--sub)">日本 · 0422-00-0000</div></div><span class="ok2">承認済み</span></div>${ft()}`,
+'ログインしているデバイス':()=>`<div class="dvh"><svg viewBox="0 0 120 230" width="120"><rect x="4" y="4" width="112" height="222" rx="20" fill="none" stroke="var(--fg)" stroke-width="5"/><rect x="14" y="30" width="92" height="170" rx="6" fill="var(--card)"/><circle cx="60" cy="14" r="3.5" fill="var(--fg)"/><g transform="translate(36 70) scale(2)" fill="var(--acc)">${I.lock}</g><rect x="30" y="160" width="60" height="10" rx="5" fill="var(--line)"/><rect x="30" y="160" width="50" height="10" rx="5" fill="#34a853"/></svg><div style="font-size:20px">このデバイス</div><span class="ok2">● オンライン</span></div><div class="tl2">${[['バッテリー','84%'],['Wi-Fi','接続中'],['最終使用','たった今'],['管理','保護者']].map(x=>`<div>${x[0]}<b>${x[1]}</b></div>`).join('')}</div><div class="emp">管理対象のデバイスは、このデバイスだけです</div>${ft()}`,
+'現在地の共有':()=>`<div class="mpf">${mapSvg}<i class="acr"></i><span class="tag2">● 共有中</span></div><div class="sh2"><div class="r3"><b>現在地を共有しています</b><small>1 分前に更新 · 精度 約 10 m</small></div><div class="who"><div class="av4">保</div><span>保護者 1 人が確認できます</span></div><div class="btn2" data-pw>${ic('lock',16)}共有を停止</div>${ft()}</div>`,
+'位置情報の設定':()=>`<div class="fl"><div class="fh">位置情報サービス</div>${[['位置情報の使用','現在地の共有に使われます',1],['高精度モード','Wi-Fi とモバイル ネットワークで位置を補正',1],['位置情報の履歴','移動の履歴を保存しません',0],['スキャンの許可','Wi-Fi と Bluetooth のスキャン',1]].map(x=>`<div class="fr" data-pw><div><div class="a">${x[0]}</div><div class="b">${x[1]}</div></div><div class="tg2${x[2]?' on':''}"><i></i></div></div>`).join('')}</div>${ft()}`,
+'今日の上限':()=>{const C=2*Math.PI*88;return `<div class="rg"><svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="88" fill="none" stroke="var(--line)" stroke-width="18"/><circle cx="110" cy="110" r="88" fill="none" stroke="#ff9100" stroke-width="18" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" transform="rotate(-90 110 110)"><animate attributeName="stroke-dashoffset" from="${C}" to="0" dur="1.2s" fill="freeze"/></circle></svg><div class="rc"><b>2 時間</b><span>使用済み / 上限 2 時間</span></div></div><div class="wc" data-pw>${['日','月','火','水','木','金','土'].map(k=>`<div><i></i>${k}</div>`).join('')}</div><div class="sec">上限に達すると</div><div class="stp"><div><b>1</b>残り 5 分でお知らせが届きます</div><div><b>2</b>デバイスがロックされます</div><div><b>3</b>電話は引き続き使えます</div></div>${ft()}`},
+'Google Play':()=>`<div class="age"><b>12+</b><span>対象年齢</span></div><div class="flw"><div><i>${ic('padd',22)}</i>アプリを選ぶ</div><u>→</u><div class="lk2"><i>${ic('lock',22)}</i>保護者が承認</div><u>→</u><div><i>${ic('home',22)}</i>インストール</div></div><div class="sec">承認が必要な操作</div><div class="chs"><span data-pw>アプリのダウンロード</span><span data-pw>アプリ内購入</span><span data-pw>有料コンテンツ</span></div>${ft()}`,
+'YouTube ファミリー センター':()=>`<div class="cmp"><div class="cd" data-pw><i>${ic('ppl',28)}</i><b>12 歳以下</b><small>YouTube Kids</small></div><div class="cd on" data-pw><s>✓</s><i>${ic('person',28)}</i><b>13 歳以上</b><small>管理された YouTube</small></div></div><ul class="bl"><li>再生履歴は保存されません</li><li>年齢に合った動画だけがおすすめされます</li></ul>${ft()}`,
+'Google Chrome とウェブ':()=>`<div class="br"><div class="ad">${ic('lock',14)}<span>example-site.com/…</span></div><div class="pg">${ic('block',54,'#f28b82')}<b>このサイトはブロックされています</b><small>保護者がフィルタを設定しています</small></div></div><div class="seg">${['許可したサイトのみ','不適切なサイトをブロック','制限なし'].map((x,i)=>`<span data-pw class="${i===1?'on':''}">${x}</span>`).join('')}</div>${ft()}`,
+'Google 検索':()=>`<div class="sb2"><b>G</b><span>検索</span>${ic('mic',20)}</div><div class="sf">${ic('block',16)}セーフサーチ ON</div><div class="rs">${[80,64,72].map(w=>`<div class="rr"><i style="width:${w}%"></i><i style="width:${w-30}%"></i></div>`).join('')}<div class="ov2">${ic('lock',30)}<b>不適切な結果は表示されません</b></div></div>${ft('セーフサーチは変更できません。')}`,
+'Gemini':()=>`<div class="gm"><svg viewBox="0 0 24 24" width="96"><defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4285f4"/><stop offset="1" stop-color="#c58af9"/></linearGradient></defs><path fill="url(#gg)" d="M12 1c.6 6.4 4.6 10.4 11 11-6.4.6-10.4 4.6-11 11-.6-6.4-4.6-10.4-11-11C7.4 11.4 11.4 7.4 12 1z"/></svg></div><div class="sec">利用できる機能</div><div class="cl2">${[['質問に答える',1],['文章を書く',1],['宿題のヒント',1],['画像の生成',0],['コードの作成',0]].map(x=>`<span class="${x[1]?'y':'n'}" data-pw>${x[1]?'✓':ic('lock',12)} ${x[0]}</span>`).join('')}</div>${ft()}`,
+'Google アシスタント':()=>`<div class="wv">${Array.from({length:27},(_,i)=>`<i style="height:${10+Math.round(Math.abs(Math.sin(i*.7))*42)}px"></i>`).join('')}</div><div class="mk">${ic('mic',34)}</div><div class="two" style="margin-top:22px"><div class="tl3 on" data-pw><b>利用</b><span>ON</span></div><div class="tl3" data-pw><b>音声での購入</b><span>OFF</span></div></div>${ft()}`,
+'アカウント設定':(sub)=>`<div class="idc"><div class="rib">保護者が管理</div><div class="av5">${ic('person',40)}</div><b>${sub}</b><small>Google アカウント</small></div><div class="kv">${[['アカウントの種類','保護者が管理'],['お子様の名前','非公開'],['生年月日','非公開'],['ログイン','このデバイス']].map(x=>`<div data-pw><span>${x[0]}</span><i></i><em>${x[1]}</em></div>`).join('')}</div>${ft()}`,
+'デバイスを健康的に使用する方法':()=>`<div class="car">${[['moon','#3b3f8f','休息時間を活用する','寝る前の 1 時間は画面を見ない習慣をつけましょう。'],['timer','#1f7a4d','こまめに休憩する','30 分ごとに目を休めて、体を動かしましょう。'],['info','#a8641a','通知を減らす','必要のない通知は切って、集中しやすくしましょう。']].map((x,i)=>`<div style="background:${x[1]}"><span>${i+1} / 3</span>${ic(x[0],44,'#ffffffd9')}<b>${x[2]}</b><p>${x[3]}</p></div>`).join('')}</div><p class="d" style="text-align:center">横にスワイプしてヒントを見る</p>`};
+function dlg(t,x,b){const m=document.createElement('div');m.className='mod';m.innerHTML=`<div class="mb"><h4>${t}</h4><p>${x}</p><div class="ma">${b.map((q,i)=>`<span data-i="${i}">${q[0]}</span>`).join('')}</div></div>`;m.onclick=e=>{const c=e.target.closest('[data-i]');if(c||e.target===m){m.remove();if(c&&b[c.dataset.i][1])b[c.dataset.i][1]()}};document.body.appendChild(m)}
+function askPw(el){let sh=el.querySelector('.sheet');if(!sh){el.insertAdjacentHTML('beforeend',SHEET);sh=el.querySelector('.sheet')}const i=sh.querySelector('#pw');i.value='';i.type='password';sh.querySelector('.fld').classList.remove('bad');sh.querySelector('#err').style.display='none';sh.querySelector('#eye .cb').classList.add('off');requestAnimationFrame(()=>requestAnimationFrame(()=>{sh.classList.add('open');setTimeout(()=>{try{i.focus()}catch(_){}},350)}))}
+function callTo(n){CALLN=n;push('call')}
+function startCall(el){const cs=el.querySelector('#cs');setTimeout(()=>{if(!el.isConnected)return;let n=0;cs.textContent='00:00';const iv=setInterval(()=>{if(!el.isConnected){clearInterval(iv);return}n++;cs.textContent=String(n/60|0).padStart(2,'0')+':'+String(n%60).padStart(2,'0')},1000)},2200)}
+function pfilter(el){const q=el.querySelector('#psi').value.trim().toLowerCase();const ci=[...el.querySelectorAll('.pchip')].findIndex(c=>c.classList.contains('on'));let n=0;el.querySelectorAll('.plist .pr').forEach(r=>{const ok=(!q||r.dataset.call.toLowerCase().includes(q))&&(ci!==1||r.dataset.t==='miss')&&(ci!==2||r.querySelector('.biz'));r.style.display=ok?'':'none';if(ok)n++});el.querySelector('#pempty').style.display=n?'none':'flex';el.querySelector('.psec').style.display=n?'':'none'}
+function hpush(){try{history.pushState({},'');hd++}catch(e){}}
+function closeLayer(){const md=document.querySelector('.mod');if(md){md.remove();return true}const t=stack[stack.length-1];if(!t)return false;const o=t.querySelector('.drawer.open,.sheet.open,.pad.open');if(!o)return false;if(o.classList.contains('pad'))padTo(t,false);else o.classList.remove('open');return true}
+function back(){if(closeLayer())return;if(stack.length<2)return;if(hd>0)history.back();else pop()}
+window.addEventListener('popstate',()=>{if(hd>0)hd--;if(closeLayer()){hpush();return}pop()});
+function padTo(el,on){el.querySelector('.pad').classList.toggle('open',on);el.querySelector('#pKey').classList.toggle('act',on);el.querySelector('#pHome').classList.toggle('act',!on)}
+const PN=['09000000001','05000000002','09000000003'];
+function fmtJP(v){return /^0\d{3,}$/.test(v)?v.slice(0,3)+'-'+v.slice(3,7)+(v.length>7?'-'+v.slice(7):''):v}
+function pdial(el,k){const d=el.querySelector('#pv');let v=d.dataset.v||'';v=k==='<'?v.slice(0,-1):(v+k).slice(0,13);d.dataset.v=v;d.textContent=fmtJP(v);const m=/^\d+$/.test(v)?PN.find(n=>n.startsWith(v)):null;const f=m?fmtJP(m):'';el.querySelector('#psug').innerHTML=m?`<div>候補</div><div class="pr" data-call="${f}"><div class="pav">${svg('person','')}</div><div class="m"><div class="n">${f}</div><div class="s">携帯 ${f}</div></div>${svg('call','')}</div>`:''}
+function push(name,dir){
+  const L=dir==='L';
+  const el=document.createElement('div');el.className='screen'+(stack.length?(L?' offL':' off'):'');el.innerHTML=screens[name]();el.dataset.name=name;el.dataset.dir=L?'L':'R';
+  app.appendChild(el);
+  const prev=stack[stack.length-1];
+  stack.push(el);wire(el);
+  if(prev){requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.remove('off','offL');prev.classList.add(L?'underR':'under')}))}
+  if(name==='loading'){setTimeout(()=>{if(stack[stack.length-1]===el){replace('family')}},1500)}
+  if(name==='call')startCall(el);if(prev)hpush();
+}
+function replace(name){
+  const old=stack.pop();const prev=stack[stack.length-1];
+  const el=document.createElement('div');el.className='screen';el.innerHTML=screens[name]();el.dataset.name=name;
+  app.appendChild(el);stack.push(el);wire(el);old.remove();
+}
+function pop(){
+  if(stack.length<2)return;
+  const el=stack.pop();const prev=stack[stack.length-1];
+  el.classList.add(el.dataset.dir==='L'?'offL':'off');prev.classList.remove('under','underR');
+  setTimeout(()=>el.remove(),320);
+}
+function wire(el){
+  const body=el.querySelector('.body'),b=el.querySelector('.bar');
+  if(body&&b){const h1=body.querySelector('h1');
+    body.addEventListener('scroll',()=>{const lim=h1?h1.offsetTop+h1.offsetHeight-20:10;b.classList.toggle('on',body.scrollTop>(el.dataset.name==='main'?lim:lim-10)||body.scrollTop>4&&!h1)},{passive:true})}
+  el.addEventListener('click',e=>{
+    const t=e.target;
+    if(t.closest('[data-back]'))return back();
+    if(t.closest('[data-more]')){e.stopPropagation();const m=document.getElementById('menu');m.style.display=m.style.display==='block'?'none':'block';return}
+    const g=t.closest('[data-go]');
+    if(g){const n=g.dataset.go;document.querySelectorAll('.drawer.open').forEach(d=>d.classList.remove('open'));if(n==='advanced')return push('loading');if(n.startsWith('x:')){XK=n.slice(2);return push('x')}return push(n,n==='phone'?'L':'')}
+    const ts=t.closest('[data-toast]');if(ts)return toast(ts.dataset.toast);
+    const cb=t.closest('[data-cb]');if(cb)return askPw(el);
+    if(t.closest('#req'))return askPw(el);
+    if(t.id==='scrim'){el.querySelector('.sheet').classList.remove('open');return}
+    if(t.closest('#next')){const nb=el.querySelector('#next');if(nb.dataset.busy)return;nb.dataset.busy=1;nb.innerHTML='<i class="sp2"></i>';const f=el.querySelector('.fld');f.classList.remove('bad');el.querySelector('#err').style.display='none';setTimeout(()=>{nb.innerHTML='次へ';delete nb.dataset.busy;f.classList.add('bad');el.querySelector('#err').style.display='block';f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');try{navigator.vibrate&&navigator.vibrate([40,40,40])}catch(_){}},900);return}
+    const ey=t.closest('#eye');if(ey){const p=el.querySelector('#pw');p.type=p.type==='password'?'text':'password';ey.querySelector('.cb').classList.toggle('off');return}
+    const k=t.closest('[data-k]');if(k){el.querySelector('#dsp').textContent+=k.dataset.k;return}
+    if(t.closest('#bs')){const d=el.querySelector('#dsp');d.textContent=d.textContent.slice(0,-1);return}
+    if(t.closest('#call'))return toast('発信はこのデモでは使えません');
+    if(t.closest('[data-help]'))return dlg('ヘルプ','この画面では、保護者が設定した利用制限を確認できます。変更したいときは、保護者の方にリクエストを送ってください。',[['閉じる']]);
+    const cl=t.closest('[data-call]');if(cl)return callTo(cl.dataset.call);
+    if(t.closest('[data-tcb]'))return askPw(el);
+    const tgl=t.closest('[data-tg]');if(tgl){const sw=tgl.querySelector('.tg2');if(sw)sw.classList.toggle('on');try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}return}
+    const ctg=t.closest('[data-ct]');if(ctg){ctg.classList.toggle('on');return}
+    if(t.closest('[data-pw]'))return askPw(el);
+    if(t.closest('[data-endcall]'))return back();
+    const xq=t.closest('#xreq');if(xq){if(!xq.dataset.d){xq.dataset.d=1;xq.textContent='✓ リクエスト送信済み';xq.style.opacity=.6;toast('保護者にリクエストを送信しました')}return}
+    if(t.closest('#forgot'))return dlg('パスワードをお忘れの場合','保護者の方のパスワードの再設定は、保護者の方の Google アカウントでお手続きください。',[['OK']]);
+    if(t.closest('.ph')){
+      if(t.closest('#pmenu')){el.querySelector('.drawer').classList.add('open');return}
+      if(t.classList.contains('dscrim')){el.querySelector('.drawer').classList.remove('open');return}
+      if(t.closest('#pKey')){padTo(el,true);return}
+      if(t.closest('#pHome')){padTo(el,false);return}
+      const c=t.closest('.pchip');if(c){el.querySelectorAll('.pchip').forEach(x=>x.classList.remove('on'));c.classList.add('on');pfilter(el);return}
+      const pk=t.closest('[data-pk]');if(pk){pdial(el,pk.dataset.pk);return}
+      if(t.closest('#pbs')){pdial(el,'<');return}
+      if(t.closest('#pgo')){const v=el.querySelector('#pv').dataset.v;return v?callTo(fmtJP(v)):toast('番号を入力してください')}
+      if(t.closest('#pmic')){el.querySelector('#psi').focus();return}
+      if(t.closest('#pfv')){const a=el.querySelector('.padd'),o=a.style.display==='none';a.style.display=o?'':'none';t.closest('#pfv').querySelector('svg').style.transform=o?'':'rotate(180deg)';return}
+      if(t.closest('#pdel')){el.querySelector('.drawer').classList.remove('open');dlg('通話履歴を削除','すべての通話履歴を削除しますか？この操作は元に戻せません。',[['キャンセル'],['削除',()=>{el.querySelectorAll('.plist .pr').forEach(r=>r.remove());pfilter(el)}]]);return}
+      if(t.closest('#phelp')){el.querySelector('.drawer').classList.remove('open');dlg('ヘルプとフィードバック','電話アプリの使い方は、ヘルプセンターで確認できます。ご意見はフィードバックから送信できます。',[['閉じる']]);return}
+    }
+    if(t.closest('#sched'))return askPw(el);
+    if(t.closest('#showAll')){const l=el.querySelector('#moreL'),s=t.closest('#showAll');l.style.display='block';s.style.display='none'}
+  });
+}
+
+const de=document.documentElement;
+document.addEventListener('click',e=>{const m=document.getElementById('menu');if(!e.target.closest('#menu'))m.style.display='none'});
+document.getElementById('mTh').onclick=()=>{const c=de.dataset.theme==='light'||(!de.dataset.theme&&matchMedia('(prefers-color-scheme:light)').matches);de.dataset.theme=c?'dark':'light'};
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'){if(e.key==='Enter'&&e.target.id==='pw'){const n=e.target.closest('.sheet').querySelector('#next');if(n)n.click()}return}if(e.key==='Escape'||e.key==='Backspace')back()});
+
+const RS='.row:not(.ro),.gi,.pr,.pk,.rb,.pl,.di,.pchip,.pgo,.chip,.sw,.bt button,.btn,.pn i,.ib';
+document.addEventListener('pointerdown',e=>{const h=e.target.closest&&e.target.closest(RS);if(!h)return;const r=h.getBoundingClientRect(),d=Math.max(r.width,r.height)*2,x=document.createElement('span');x.className='rp';x.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-r.left-d/2}px;top:${e.clientY-r.top-d/2}px`;h.appendChild(x);setTimeout(()=>x.remove(),650);if(h.matches('.pk,.pn i')){try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}}});
+document.addEventListener('pointerdown',()=>{try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(_){}},{once:true});
+document.addEventListener('input',e=>{if(e.target.id==='psi')pfilter(e.target.closest('.screen'));if(e.target.id==='pw'){e.target.parentNode.classList.remove('bad');const r=e.target.closest('.sheet').querySelector('#err');if(r)r.style.display='none'}});
+push('lock');
+</script>
+</body>
+</html>
